@@ -1,11 +1,11 @@
 // handles a multiplexed 8 segment display
-// ENSURE digitPin, segmentPin, AND ledPin ARE SET CORRECTLY!
+// ENSURE digitPin, segmentPin, AND dotsPin ARE SET CORRECTLY!
 // there should be 4 digit pins (increasing from digitPin) and 7 segment pins
-// to control colon leds, float digits middle 2 digits HIGH, and set ledPin (labeled "dots") low
+// to control colon leds, float digits middle 2 digits HIGH, and set dotsPin LOW
 
 int digitPin = 2;
 int segmentPin = 7;
-//int ledPin = 11;
+int dotsPin = 6;
 
 int digits[10][7] = {
   {1,1,1,1,1,1,0}, // 0
@@ -28,13 +28,18 @@ void setup() {
 }
 
 void reset() {
+  // set all digits off (LOW)
   for (int p = digitPin; p < digitPin + 4; p++) {
     digitalWrite(p, LOW);
   }
   
+  // set all segments off (HIGH)
   for (int p = segmentPin; p < segmentPin + 7; p++) {
     digitalWrite(p, HIGH);
   }
+  
+  // set all dots off (HIGH)
+  digitalWrite(dotsPin, HIGH);
 }
 
 void fail() {
@@ -70,11 +75,25 @@ void lightDig (int digit, int numeral) {
   }
 }
 
+void flashDots() {
+  // have to make sure only one dot is on a time to ensure brightness is the same
+  digitalWrite(dotsPin, LOW);
+  digitalWrite(digitPin + 1, HIGH);
+  digitalWrite(digitPin + 1, LOW);
+  digitalWrite(digitPin + 2, HIGH);
+  digitalWrite(digitPin + 2, LOW);
+  digitalWrite(dotsPin, HIGH);
+}
+
 void loop() {
   lightDig(1,0);
   lightDig(2,1);
   lightDig(3,2);
   lightDig(4,3);
+
+  if ((millis() %  2000) > 1000) {
+    flashDots();
+  }
   
   reset();
   delay(1);
